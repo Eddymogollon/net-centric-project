@@ -1,26 +1,30 @@
 class Channel:
     def __init__(self, name):
-        self.clients = {}  # Client Name -> Socket
+        self.users = {}  # Client Name -> Socket
         self.channel_name = name
 
-    def welcome_client(self, clientName):
-        for name, socket in self.clients.items():
-            if name is clientName:
-                chatMessage = '\n\n== {0} have joined the channel {1}!\n'.format("You", self.channel_name)
-                socket.sendall(chatMessage.encode('utf8'))
-            else:
-                chatMessage = '\n\n== {0} has joined the channel {1}!\n'.format(clientName, self.channel_name)
-                socket.sendall(chatMessage.encode('utf8'))
+    def welcome_user(self, username):
+        all_users = self.get_all_users_in_channel()
 
-    def broadcast_message(self, chatMessage, clientName=''):
-        for name, socket in self.clients.items():
-            print(chatMessage)
-            if name is clientName:
-                socket.sendall(("You: " + chatMessage).encode('utf8'))
+        for user in self.users:
+            if user.username is username:
+                chatMessage = '\n\n> {0} have joined the channel {1}!\n|{2}'.format("You", self.channel_name, all_users).encode('utf8')
+                user.socket.sendall(chatMessage)
             else:
-                socket.sendall((clientName + chatMessage).encode('utf8'))
+                chatMessage = '\n\n> {0} has joined the channel {1}!\n|{2}'.format(username, self.channel_name, all_users).encode('utf8')
+                user.socket.sendall(chatMessage)
 
-    def remove_client_from_channel(self, clientName):
-        del self.clients[clientName]
-        leave_message = "\n" + clientName + " has left the channel " + self.channel_name + "\n"
+    def broadcast_message(self, chatMessage, username=''):
+        for user in self.users:
+            if user.username is username:
+                user.socket.sendall("You: {0}".format(chatMessage).encode('utf8'))
+            else:
+                user.socket.sendall("{0} {1}".format(username, chatMessage).encode('utf8'))
+
+    def get_all_users_in_channel(self):
+        return ' '.join([user.username for user in self.users])
+
+    def remove_client_from_channel(self, user):
+        self.users.remove(user)
+        leave_message = "\n> {0} has left the channel {1}\n".format(user.username, self.channel_name)
         self.broadcast_message(leave_message)
