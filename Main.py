@@ -16,6 +16,8 @@ class SocketThreadedTask(threading.Thread):
             try:
                 message = self.socket.receive()
 
+                print(message)
+
                 if message == '/quit':
                     self.callbacks['clear_chat_window']()
                     self.callbacks['update_chat_window']('\n> You have been disconnected from the server.\n')
@@ -34,6 +36,9 @@ class SocketThreadedTask(threading.Thread):
                 elif 'left' in message:
                     self.callbacks['update_chat_window'](message)
                     self.callbacks['remove_user_from_list'](message.split(' ')[2])
+                elif 'change your name' in message:
+                    self.callbacks['update_chat_window'](split_message[0])
+                    self.callbacks['update_user_list'](split_message[1])
                 else:
                     self.callbacks['update_chat_window'](message)
             except OSError:

@@ -105,6 +105,8 @@ class Server:
                 self.time(user)
             elif '/nick' in chatMessage[:5].lower():
                 self.nick(user, chatMessage)
+            elif '/userhost' in chatMessage.lower():
+                self.userhost(user)
             else:
                 self.send_message(user, chatMessage + '\n')
 
@@ -182,7 +184,15 @@ Use /join [channel name] to join a channel.\n\n""".encode('utf8')
     def time(self, user):
         user.socket.sendall(("== Time is: " + time.asctime()).encode('utf8'))
 
+    def userhost(self, user):
+        user_info = user.username + " " + user.nickname + " " + user.status + " " + user.usertype
+        user.socket.sendall(user_info.encode('utf8'))
+        ### store user data in database and then use to retrieve
+
+
     def nick(self, user, chatMessage):
+
+        # bug: needs to modify username that are in channels. it is not easy.
 
         splitMessage = chatMessage.split()
         if len(splitMessage) == 2:
