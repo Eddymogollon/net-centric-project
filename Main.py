@@ -19,7 +19,7 @@ class SocketThreadedTask(threading.Thread):
                 message = self.socket.receive()
 
                 if message == '/quit':
-                    self.callback('\n> You have been disconnected from the server.\n')
+                    self.callback('\n== You have been disconnected from the server.\n')
                     self.socket.disconnect()
                     break
                 else:
