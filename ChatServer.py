@@ -4,6 +4,7 @@ import threading
 import Channel
 import User
 import Util
+import time
 
 class Server:
     SERVER_CONFIG = {"MAX_CONNECTIONS": 15}
@@ -82,7 +83,7 @@ class Server:
         user.socket.sendall(welcomeMessage)
 
         while True:
-            chatMessage = user.socket.recv(size).decode('utf8').lower()
+            chatMessage = user.socket.recv(size).decode('utf8')
 
             if self.exit_signal.is_set():
                 break
@@ -90,15 +91,17 @@ class Server:
             if not chatMessage:
                 break
 
-            if '/quit' in chatMessage:
+            if '/quit' in chatMessage[:5].lower():
                 self.quit(user)
                 break
-            elif '/list' in chatMessage:
-                self.list_all_channels(user)
-            elif '/help' in chatMessage:
+            elif '/help' in chatMessage[:5].lower():
                 self.help(user)
-            elif '/join' in chatMessage:
+            elif '/join' in chatMessage[:5].lower():
                 self.join(user, chatMessage)
+            elif '/list' in chatMessage[:5].lower():
+                self.list_all_channels(user)
+            elif '/time' in chatMessage[:5].lower():
+                self.time(user)
             else:
                 self.send_message(user, chatMessage + '\n')
 
@@ -148,7 +151,7 @@ class Server:
                 self.channels[channelName].welcome_user(user.username)
                 self.users_channels_map[user.username] = channelName
         else:
-            self.help(clientSocket)
+            self.help(user)
 
     def send_message(self, user, chatMessage):
         if user.username in self.users_channels_map:
@@ -172,6 +175,9 @@ Use /join [channel name] to join a channel.\n\n""".encode('utf8')
     def server_shutdown(self):
         print("Shutting down chat server.\n")
         self.serverSocket.close()
+
+    def time(self, user):
+        user.socket.sendall(("== Time is: " + time.asctime()).encode('utf8'))
 
 def main():
     chatServer = Server()
