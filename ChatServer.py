@@ -155,7 +155,7 @@ class Server:
 
     def send_message(self, user, chatMessage):
         if user.username in self.users_channels_map:
-            self.channels[self.users_channels_map[user.username]].broadcast_message(chatMessage, "{0}: ".format(user.username))
+            self.channels[self.users_channels_map[user.username]].broadcast_message(chatMessage, "{0}{1}:".format(Util.time_text(), user.username))
         else:
             chatMessage = """\n> You are currently not in any channels:
 
