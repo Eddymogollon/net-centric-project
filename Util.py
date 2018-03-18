@@ -18,7 +18,7 @@ def generate_username(name):
 def generate_random_nickname():
     minLenght = 8
     maxLength = 15
-    length = random.radint(minLenght, maxLength)
+    length = random.randint(minLenght, maxLength)
 
     return ''.join(random.choice(string.ascii_lowercase + string.digits) for _ in range(length))
 

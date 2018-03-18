@@ -2,27 +2,27 @@ import socket
 import sys
 import threading
 import Channel
-import User
+import time
 import Util
+import User
 
 class Server:
     SERVER_CONFIG = {"MAX_CONNECTIONS": 15}
-
-    HELP_MESSAGE = """\n> The list of commands available are:
+    HELP_MESSAGE = """\n== The list of commands available are:
 
 /help                   - Show the instructions
 /join [channel_name]    - To create or switch to a channel.
 /quit                   - Exits the program.
-/list                   - Lists all available channels.\n\n""".encode('utf8')
+/list                   - Lists all available channels.\n\n"""
 
     WELCOME_MESSAGE = "\n> Welcome to our chat app!!! What is your name?\n".encode('utf8')
 
     def __init__(self, host=socket.gethostbyname('localhost'), port=50000, allowReuseAddress=True, timeout=3):
         self.address = (host, port)
-        self.channels = {} # Channel Name -> Channel
-        self.users_channels_map = {} # User Name -> Channel Name
-        self.client_thread_list = [] # A list of all threads that are either running or have finished their task.
-        self.users = [] # A list of all the users who are connected to the server.
+        self.channels = {}  # Channel Name -> Channel
+        self.users_channels_map = {}  # User Name -> Channel Name
+        self.client_thread_list = []  # A list of all threads that are either running or have finished their task.
+        self.users = []  # A list of all the users who are connected to the server.
         self.exit_signal = threading.Event()
 
         try:
@@ -42,7 +42,7 @@ class Server:
             sys.stderr.write('Failed to bind to address {0} on port {1}. Error - {2}'.format(self.address[0], self.address[1], errorMessage))
             raise
 
-    def start_listening(self, defaultGreeting="\n> Welcome to our chat app!!! What is your full name?\n"):
+    def start_listening(self):
         self.serverSocket.listen(Server.SERVER_CONFIG["MAX_CONNECTIONS"])
 
         try:
@@ -82,7 +82,7 @@ class Server:
         user.socket.sendall(welcomeMessage)
 
         while True:
-            chatMessage = user.socket.recv(size).decode('utf8').lower()
+            chatMessage = user.socket.recv(size).decode('utf8')
 
             if self.exit_signal.is_set():
                 break
@@ -90,15 +90,17 @@ class Server:
             if not chatMessage:
                 break
 
-            if '/quit' in chatMessage:
+            if '/quit' in chatMessage[:5].lower():
                 self.quit(user)
                 break
-            elif '/list' in chatMessage:
-                self.list_all_channels(user)
-            elif '/help' in chatMessage:
+            elif '/help' in chatMessage[:5].lower():
                 self.help(user)
-            elif '/join' in chatMessage:
+            elif '/join' in chatMessage[:5].lower():
                 self.join(user, chatMessage)
+            elif '/list' in chatMessage[:5].lower():
+                self.list_all_channels(user)
+            elif '/time' in chatMessage[:5].lower():
+                self.time(user)
             else:
                 self.send_message(user, chatMessage + '\n')
 
@@ -122,8 +124,8 @@ class Server:
             chatMessage += "\n"
             user.socket.sendall(chatMessage.encode('utf8'))
 
-    def help(self, user):
-        user.socket.sendall(Server.HELP_MESSAGE)
+    def help(self, user, extraMessage=''):
+        user.socket.sendall((extraMessage + Server.HELP_MESSAGE).encode('utf8'))
 
     def join(self, user, chatMessage):
         isInSameRoom = False
@@ -148,20 +150,19 @@ class Server:
                 self.channels[channelName].welcome_user(user.username)
                 self.users_channels_map[user.username] = channelName
         else:
-            self.help(clientSocket)
+            self.help(user)
 
     def send_message(self, user, chatMessage):
         if user.username in self.users_channels_map:
-            self.channels[self.users_channels_map[user.username]].broadcast_message(chatMessage, "{0}: ".format(user.username))
+            self.channels[self.users_channels_map[user.username]].broadcast_message(chatMessage, "{0}{1}: ".format(Util.time_text, user.username))
         else:
             chatMessage = """\n> You are currently not in any channels:
 
-Use /list to see a list of available channels.
-Use /join [channel name] to join a channel.\n\n""".encode('utf8')
-
+            Use /list to see a list of available channels.
+            Use /join [channel name] to join a channels.\n\n""".encode('utf8')
             user.socket.sendall(chatMessage)
 
-    def remove_user(self, user):
+    def remove_client(self, user):
         if user.username in self.users_channels_map:
             self.channels[self.users_channels_map[user.username]].remove_user_from_channel(user)
             del self.users_channels_map[user.username]
@@ -170,17 +171,22 @@ Use /join [channel name] to join a channel.\n\n""".encode('utf8')
         print("Client: {0} has left\n".format(user.username))
 
     def server_shutdown(self):
-        print("Shutting down chat server.\n")
+        print('Shutting down chat server.\n')
         self.serverSocket.close()
+
+    def time(self, user):
+        user.socket.sendall(("== Time is: " + time.asctime()).encode('utf8'))
+
 
 def main():
     chatServer = Server()
 
-    print("\nListening on port {0}".format(chatServer.address[1]))
+    print("\nListening on port " + str(chatServer.address[1]))
     print("Waiting for connections...\n")
 
     chatServer.start_listening()
     chatServer.server_shutdown()
+
 
 if __name__ == "__main__":
     main()
