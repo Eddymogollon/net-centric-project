@@ -3,6 +3,7 @@ import sys
 import threading
 import Channel
 import time
+import Util
 
 class Server:
     SERVER_CONFIG = {"MAX_CONNECTIONS": 15}
@@ -125,7 +126,7 @@ class Server:
 
     def send_message(self, clientSocket, chatMessage, clientName):
         if clientName in self.channels_client_map:
-            self.channels[self.channels_client_map[clientName]].broadcast_message(chatMessage, self.time_text() + clientName + ": ")
+            self.channels[self.channels_client_map[clientName]].broadcast_message(chatMessage, Util.time_text() + clientName + ": ")
         else:
             chatMessage = """\n> You are currently not in any channels:
 
@@ -146,9 +147,6 @@ class Server:
 
     def time(self, clientSocket):
         clientSocket.sendall(("== Time is: " + time.asctime()).encode('utf8'))
-
-    def time_text(self):
-        return '[' + time.strftime("%H:%M", time.gmtime()) + '] '
 
 
 def main():

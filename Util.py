@@ -1,5 +1,6 @@
 import random
 import string
+import time
 
 def generate_username(name):
     names = name.split(" ")
@@ -20,3 +21,7 @@ def generate_random_nickname():
     length = random.radint(minLenght, maxLength)
 
     return ''.join(random.choice(string.ascii_lowercase + string.digits) for _ in range(length))
+
+
+def time_text():
+    return '[' + time.strftime("%H:%M", time.gmtime()) + '] '

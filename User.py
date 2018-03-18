@@ -36,7 +36,7 @@ class User:
     @username.setter
     def username(self, new_username):
         self._username = new_username
-        
+
     @nickname.setter
     def nickname(self, new_nickname):
         self._nickname = new_nickname
