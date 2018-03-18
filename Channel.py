@@ -6,10 +6,10 @@ class Channel:
     def welcome_client(self, clientName):
         for name, socket in self.clients.items():
             if name is clientName:
-                chatMessage = '\n\n> {0} have joined the channel {1}!\n'.format("You", self.channel_name)
+                chatMessage = '\n\n== {0} have joined the channel {1}!\n'.format("You", self.channel_name)
                 socket.sendall(chatMessage.encode('utf8'))
             else:
-                chatMessage = '\n\n> {0} has joined the channel {1}!\n'.format(clientName, self.channel_name)
+                chatMessage = '\n\n== {0} has joined the channel {1}!\n'.format(clientName, self.channel_name)
                 socket.sendall(chatMessage.encode('utf8'))
 
     def broadcast_message(self, chatMessage, clientName=''):

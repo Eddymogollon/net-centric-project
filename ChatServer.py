@@ -6,7 +6,7 @@ import time
 
 class Server:
     SERVER_CONFIG = {"MAX_CONNECTIONS": 15}
-    HELP_MESSAGE = """\n> The list of commands available are:
+    HELP_MESSAGE = """\n== The list of commands available are:
 
 /help                   - Show the instructions
 /join [channel_name]    - To create or switch to a channel.
@@ -48,11 +48,11 @@ class Server:
         listenerThread.join()
 
     def welcome_client(self, clientSocket):
-        clientSocket.sendall("\n> Welcome to our chat app!!! What is your name?\n".encode('utf8'))
+        clientSocket.sendall("\n== Welcome to our chat app!!! What is your name?\n".encode('utf8'))
 
     def client_thread(self, clientSocket, size=4096):
         clientName = clientSocket.recv(size).decode('utf8')
-        welcomeMessage = '> Welcome %s, type /help for a list of helpful commands.\n\n' % clientName
+        welcomeMessage = '== Welcome %s, type /help for a list of helpful commands.\n\n' % clientName
         clientSocket.send(welcomeMessage.encode('utf8'))
 
         while True:
@@ -86,9 +86,9 @@ class Server:
         print(len(self.channels))
 
         if len(self.channels) == 0:
-            chatMessage = "\n> No rooms available. Create your own by typing /join [channel_name]\n"
+            chatMessage = "\n== No rooms available. Create your own by typing /join [channel_name]\n"
         else:
-            chatMessage = '\n\n> Current channels available are: \n'
+            chatMessage = '\n\n== Current channels available are: \n'
             for channel in self.channels:
                 chatMessage += "    \n" + channel + ": " + str(len(self.channels[channel].clients)) + " user(s)"
             chatMessage += "\n"
@@ -106,7 +106,7 @@ class Server:
             # Here we are switching to a new channel.
             if clientName in self.channels_client_map:
                 if self.channels_client_map[clientName] == channelName:
-                    clientSocket.sendall(("\n> You are already in channel: " + channelName).encode('utf8'))
+                    clientSocket.sendall(("\n== You are already in channel: " + channelName).encode('utf8'))
                     isInSameRoom = True
                 else:  # Switch to a new channel
                     oldChannelName = self.channels_client_map[clientName]
@@ -121,14 +121,11 @@ class Server:
                 self.channels[channelName].welcome_client(clientName)
                 self.channels_client_map[clientName] = channelName
         else:
-            self.help(clientSocket, "> /join needs to have a parameter [channel_name]")
-
-
+            self.help(clientSocket, "== /join needs to have a parameter [channel_name]")
 
     def send_message(self, clientSocket, chatMessage, clientName):
-        ### Do not forget the channels here
         if clientName in self.channels_client_map:
-            self.channels[self.channels_client_map[clientName]].broadcast_message(chatMessage, clientName + ": ")
+            self.channels[self.channels_client_map[clientName]].broadcast_message(chatMessage, self.time_text() + clientName + ": ")
         else:
             chatMessage = """\n> You are currently not in any channels:
 
@@ -148,8 +145,10 @@ class Server:
         self.serverSocket.close()
 
     def time(self, clientSocket):
-        clientSocket.sendall(("> Time is: " + time.asctime()).encode('utf8'))
+        clientSocket.sendall(("== Time is: " + time.asctime()).encode('utf8'))
 
+    def time_text(self):
+        return '[' + time.strftime("%H:%M", time.gmtime()) + '] '
 
 
 def main():
@@ -160,6 +159,7 @@ def main():
 
     chatServer.start_listening()
     chatServer.server_shutdown()
+
 
 if __name__ == "__main__":
     main()

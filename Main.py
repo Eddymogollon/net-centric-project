@@ -5,8 +5,6 @@ import BaseEntry as entry
 import BaseDialog as dialog
 import threading
 
-### client
-
 class SocketThreadedTask(threading.Thread):
     def __init__(self, socket, callback):
         threading.Thread.__init__(self)
@@ -104,6 +102,7 @@ class ChatWindow(tk.Frame):
         self.send_message_button['command'] = lambda sendCallback = callback : self.send_message(send_message_to_server=sendCallback)
         self.entryField.bind("<Return>", lambda event, sendCallback = callback : self.send_message(send_message_to_server=sendCallback))
         self.messageTextArea.bind("<1>", lambda event: self.messageTextArea.focus_set())
+
 
 class ChatGUI(tk.Frame):
     def __init__(self, root):
