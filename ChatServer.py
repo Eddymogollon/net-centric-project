@@ -14,7 +14,8 @@ class Server:
 /help                   - Show the instructions
 /join [channel_name]    - To create or switch to a channel.
 /quit                   - Exits the program.
-/list                   - Lists all available channels.\n\n""".encode('utf8')
+/list                   - Lists all available channels.
+/time                   - Returns the local time on the current server\n\n""".encode('utf8')
 
     WELCOME_MESSAGE = "\n> Welcome to our chat app!!! What is your name?\n".encode('utf8')
 
