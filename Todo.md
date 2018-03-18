@@ -1,5 +1,3 @@
-# add users
-# add time and format [12:34] == message
 # Add instructions
 # add topic with tkinter
 # what is @?

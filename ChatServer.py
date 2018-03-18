@@ -103,6 +103,8 @@ class Server:
                 self.list_all_channels(user)
             elif '/time' in chatMessage[:5].lower():
                 self.time(user)
+            elif '/nick' in chatMessage[:5].lower():
+                self.nick(user, chatMessage)
             else:
                 self.send_message(user, chatMessage + '\n')
 
@@ -180,6 +182,17 @@ Use /join [channel name] to join a channel.\n\n""".encode('utf8')
     def time(self, user):
         user.socket.sendall(("== Time is: " + time.asctime()).encode('utf8'))
 
+    def nick(self, user, chatMessage):
+
+        splitMessage = chatMessage.split()
+        if len(splitMessage) == 2:
+        ### update current box
+            print(user.username)
+            user.username = chatMessage.split()[1]
+            print(user.username)
+            user.socket.sendall(("== You changed your name to {0}".format(user.username)).encode('utf8'))
+        else:
+            user.socket.sendall(("== Invalid parameters. Try again following the pattern /nick <username>").encode('utf8'))
 def main():
     chatServer = Server()
 
