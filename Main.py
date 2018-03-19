@@ -65,7 +65,7 @@ class ChatDialog(dialog.BaseDialog):
         try:
             port = int(self.portEntryField.get())
 
-            if(port >= 0 and port < 65536):
+            if (port >= 0 and port < 65536):
                 self.result = (host, port)
                 return True
             else:

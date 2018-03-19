@@ -24,5 +24,4 @@ def generate_random_nickname():
 
 
 def time_text():
-
     return '[' + time.strftime("%H:%M", time.gmtime(time.time() - (3600 * 4))) + '] '

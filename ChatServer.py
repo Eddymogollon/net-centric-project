@@ -19,7 +19,7 @@ class Server:
 
     WELCOME_MESSAGE = "\n> Welcome to our chat app!!! What is your name?\n".encode('utf8')
 
-    def __init__(self, host=socket.gethostbyname('localhost'), port=50000, allowReuseAddress=True, timeout=3):
+    def __init__(self, host=socket.gethostbyname('localhost'), port=50000, allowReuseAddress=True, timeout=1000):
         self.address = (host, port)
         self.channels = {} # Channel Name -> Channel
         self.users_channels_map = {} # User Name -> Channel Name
@@ -107,6 +107,10 @@ class Server:
                 self.nick(user, chatMessage)
             elif '/userhost' in chatMessage.lower():
                 self.userhost(user)
+            elif '/part' in chatMessage[:5].lower():
+                self.part(user)
+            elif '/topic' in chatMessage[:6].lower():
+                self.topic(user, chatMessage)
             else:
                 self.send_message(user, chatMessage + '\n')
 
@@ -131,6 +135,15 @@ class Server:
             user.socket.sendall(chatMessage.encode('utf8'))
 
     def help(self, user):
+        print("channels:")
+        print(self.channels)
+        print("users_channels_map:")
+        print(self.users_channels_map)
+        print("users:")
+        print(self.users)
+        print("client_thread_list:")
+        print(self.client_thread_list)
+
         user.socket.sendall(Server.HELP_MESSAGE)
 
     def join(self, user, chatMessage):
@@ -139,11 +152,11 @@ class Server:
         if len(chatMessage.split()) >= 2:
             channelName = chatMessage.split()[1]
 
-            if user.username in self.users_channels_map: # Here we are switching to a new channel.
+            if user.username in self.users_channels_map:  # Here we are switching to a new channel.
                 if self.users_channels_map[user.username] == channelName:
                     user.socket.sendall("\n> You are already in channel: {0}".format(channelName).encode('utf8'))
                     isInSameRoom = True
-                else: # switch to a new channel
+                else:  # switch to a new channel
                     oldChannelName = self.users_channels_map[user.username]
                     self.channels[oldChannelName].remove_user_from_channel(user) # remove them from the previous channel
 
@@ -182,13 +195,26 @@ Use /join [channel name] to join a channel.\n\n""".encode('utf8')
         self.serverSocket.close()
 
     def time(self, user):
-        user.socket.sendall(("== Time is: " + time.asctime()).encode('utf8'))
+        user.socket.sendall(("\n== Time is: " + time.asctime()).encode('utf8'))
 
     def userhost(self, user):
-        user_info = user.username + " " + user.nickname + " " + user.status + " " + user.usertype
-        user.socket.sendall(user_info.encode('utf8'))
-        ### store user data in database and then use to retrieve
 
+        print("Userhost command is executed")
+
+        splitMessage = chatMessage.split()
+
+        if len(splitMessage) == 2:
+
+
+
+            user.socket.sendall(("\n== User info: ").encode('utf8'))
+        else:
+            user_info = user.username + " " + user.nickname + " " + user.status + " " + user.usertype
+            print(user_info)
+            user.socket.sendall(("\n== Invalid parameters. Try again following the pattern /userhost <nickname>{<space><nickname>}").encode('utf8'))
+
+        # user.socket.sendall(("\n" + user_info).encode('utf8'))
+        ### store user data in database and then use to retrieve
 
     def nick(self, user, chatMessage):
 
@@ -200,9 +226,37 @@ Use /join [channel name] to join a channel.\n\n""".encode('utf8')
             print(user.username)
             user.username = chatMessage.split()[1]
             print(user.username)
-            user.socket.sendall(("== You changed your name to {0}".format(user.username)).encode('utf8'))
+            user.socket.sendall(("\n== You changed your name to {0}".format(user.username)).encode('utf8'))
         else:
-            user.socket.sendall(("== Invalid parameters. Try again following the pattern /nick <username>").encode('utf8'))
+            user.socket.sendall(("\n== Invalid parameters. Try again following the pattern /nick <username>").encode('utf8'))
+
+    def part(self, user):
+
+        print("Part command is executed")
+        user.socket.sendall((user.username + " has left the channel.").encode('utf8'))
+
+    def topic(self, user, chatMessage):
+
+        ### check if not in channel
+
+        print("Topic command is executed")
+
+        splitMessage = chatMessage.split()
+
+        if len(splitMessage) > 2:
+            channelName = splitMessage[1]
+            topicMessage = " ".join(splitMessage[2:])
+            self.channels[channelName].topic = topicMessage
+            user.socket.sendall(("\n== Topic of channel changed to: " + topicMessage).encode('utf8'))
+        elif len(splitMessage) == 2:
+            channelName = splitMessage[1]
+            channelTopic = self.channels[channelName].topic
+
+            user.socket.sendall(("\n== Topic of channel " + channelName + " is: " + channelTopic).encode('utf8'))
+        else:
+            user.socket.sendall(("\n== Invalid parameters. Try again following the pattern /topic <channel> [<topic>]").encode('utf8'))
+
+
 def main():
     chatServer = Server()
 

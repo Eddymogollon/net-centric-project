@@ -1,7 +1,8 @@
 class Channel:
-    def __init__(self, name):
+    def __init__(self, name, topic="no topic set"):
         self.users = [] # A list of the users in this channel.
         self.channel_name = name
+        self.topic = topic
 
     def welcome_user(self, username):
         all_users = self.get_all_users_in_channel()
