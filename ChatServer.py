@@ -113,6 +113,16 @@ class Server:
                 self.topic(user, chatMessage)
             elif '/whois' in chatMessage[:6].lower():
                 self.whois(user, chatMessage)
+            elif '/users' in chatMessage[:6].lower():
+                self.users_command(user)
+            elif '/who' in chatMessage[:4].lower():
+                self.who(user, chatMessage)
+            elif '/ison' in chatMessage[:5].lower():
+                self.ison(user, chatMessage)
+            elif '/invite' in chatMessage[:7].lower():
+                self.invite(user, chatMessage)
+            elif '/restart' in chatMessage[:8].lower():
+                self.restart()
             else:
                 self.send_message(user, chatMessage + '\n')
 
@@ -224,6 +234,57 @@ Use /join [channel name] to join a channel.\n\n""".encode('utf8')
             print(user_info)
             user.socket.sendall(("\n== Invalid parameters. Try again following the pattern /whois [<server>] <nickmask>[,<nickmask>[,...]]").encode('utf8'))
 
+    def users_command(self, user):
+
+        for a_user in self.users:
+            user_info = a_user.username + " " + a_user.nickname + " " + a_user.status + " " + a_user.usertype
+            user.socket.sendall(("\n== User: " + user_info).encode('utf8'))
+
+    def ison(self, user, chatMessage):
+        print("Ison command is executed")
+        splitMessage = chatMessage.split()
+        message = '\n== '
+
+        if len(splitMessage) > 1:
+
+            for username in splitMessage[1:]:
+                for a_user in self.users:
+                    if a_user.username == username:
+                        message += a_user.username + " "
+
+            user.socket.sendall(message.encode('utf8'))
+
+        else:
+            user.socket.sendall((
+                "\n== Invalid parameters. Try again following the pattern /ison <nicknames>").encode(
+                'utf8'))
+
+    def who(self, user, chatMessage):
+        print("Who command is executed")
+        splitMessage = chatMessage.split()
+
+        if len(splitMessage) == 2:
+
+            username = splitMessage[1]
+
+            for other_user in self.users:
+
+                print(other_user.username)
+                print(username)
+
+                if other_user.username == username:
+                    user_info = other_user.username + " " + other_user.nickname + " " + other_user.status + " " + other_user.usertype
+                    user.socket.sendall(("\n== User info: " + user_info).encode('utf8'))
+                    return
+
+            user.socket.sendall(("\n== No user found").encode('utf8'))
+        else:
+            user_info = user.username + " " + user.nickname + " " + user.status + " " + user.usertype
+            print(user_info)
+            user.socket.sendall((
+                                "\n== Invalid parameters. Try again following the pattern /who <nickname>").encode(
+                'utf8'))
+
     def userhost(self, user, chatMessage):
 
         print("Userhost command is executed")
@@ -250,6 +311,29 @@ Use /join [channel name] to join a channel.\n\n""".encode('utf8')
             print(user_info)
             user.socket.sendall(("\n== Invalid parameters. Try again following the pattern /userhost <nickname>{<space><nickname>}").encode('utf8'))
 
+    def invite(self, user, chatMessage):
+        print("Invite command is executed")
+        splitMessage = chatMessage.split()
+
+        print(splitMessage)
+        print(len(splitMessage))
+
+        if len(splitMessage) == 3:
+            username = splitMessage[1]
+            channel = splitMessage[2]
+
+            for a_user in self.users:
+
+                if a_user.username == username:
+                    a_user.socket.sendall(("\n== " + user.username + " invites you to join " + channel).encode('utf8'))
+                    user.socket.sendall(("\n== " + a_user.username + " " + channel).encode('utf8'))
+                    return
+            user.socket.sendall(("\n==No such user: " + username).encode('utf8'))
+
+        else:
+            user.socket.sendall(
+                ("\n== Invalid parameters. Try again following the pattern /invite <nickname> <channel>").encode(
+                    'utf8'))
 
     def nick(self, user, chatMessage):
 
@@ -290,6 +374,9 @@ Use /join [channel name] to join a channel.\n\n""".encode('utf8')
             user.socket.sendall(("\n== Topic of channel " + channelName + " is: " + channelTopic).encode('utf8'))
         else:
             user.socket.sendall(("\n== Invalid parameters. Try again following the pattern /topic <channel> [<topic>]").encode('utf8'))
+
+    def restart(self):
+        self.serverSocket.shutdown()
 
 
 def main():
