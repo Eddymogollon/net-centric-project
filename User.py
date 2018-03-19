@@ -8,6 +8,7 @@ class User:
         self._password = password
         self._usertype = usertype
         self._status = "Online"
+        # add time connected
 
     @property
     def socket(self):
