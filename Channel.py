@@ -4,6 +4,11 @@ class Channel:
         self.channel_name = name
         self.topic = topic
 
+    def update_channels(self, user, all_channels):
+        print('update_channels')
+        print(' '.join(all_channels))
+        user.socket.sendall('[update channel]|{0}'.format(' '.join(all_channels)).encode('utf8'))
+
     def welcome_user(self, username):
         all_users = self.get_all_users_in_channel()
 

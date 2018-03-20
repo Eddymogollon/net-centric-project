@@ -33,12 +33,17 @@ class SocketThreadedTask(threading.Thread):
                     self.callbacks['clear_chat_window']()
                     self.callbacks['update_chat_window'](split_message[0])
                     self.callbacks['update_user_list'](split_message[1])
+
                 elif 'left' in message:
                     self.callbacks['update_chat_window'](message)
                     self.callbacks['remove_user_from_list'](message.split(' ')[2])
                 elif 'change your name' in message:
                     self.callbacks['update_chat_window'](split_message[0])
                     self.callbacks['update_user_list'](split_message[1])
+                elif '[update channel]' in message:
+                    print('GUI received update channel')
+                    split_message = message.split('|')
+                    self.callbacks['update_channel_list'](split_message[1])
                 else:
                     self.callbacks['update_chat_window'](message)
             except OSError:
@@ -132,6 +137,12 @@ class ChatWindow(tk.Frame):
             if user not in self.usersListBox.get(0, tk.END):
                 self.usersListBox.insert(tk.END, user)
 
+    def update_channel_list(self, channel_message):
+        channels = channel_message.split(' ')
+        print(channels)
+        for channel in channels:
+            if channel not in self.channelsListBox.get(0, tk.END):
+                self.channelsListBox.insert(tk.END, channel)
 
     def remove_user_from_list(self, user):
         print(user)
@@ -225,6 +236,7 @@ class ChatGUI(tk.Frame):
                 self.ChatWindow.clear_chat_window()
                 SocketThreadedTask(self.clientSocket, update_chat_window=self.ChatWindow.update_chat_window,
                                                       update_user_list=self.ChatWindow.update_user_list,
+                                                      update_channel_list=self.ChatWindow.update_channel_list,
                                                       clear_chat_window=self.ChatWindow.clear_chat_window,
                                                       remove_user_from_list=self.ChatWindow.remove_user_from_list,).start()
             else:
