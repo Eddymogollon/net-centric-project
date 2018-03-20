@@ -108,12 +108,12 @@ class ChatWindow(tk.Frame):
 
         self.messageTextArea['yscrollcommand'] = self.messageScrollbar.set
 
-        self.channelsListBox = tk.Listbox(parent, bg=self.backgroundListColor)
+        self.channelsListBox = tk.Listbox(parent, fg="#fff", bg=self.backgroundListColor)
         self.channelsListBox.grid(row=1, column=4, padx=5, sticky="nsew")
 
         # self.channelsListBox.insert(1, "Status")
 
-        self.usersListBox = tk.Listbox(parent, bg=self.backgroundListColor)
+        self.usersListBox = tk.Listbox(parent, fg="#fff", bg=self.backgroundListColor)
         self.usersListBox.grid(row=1, column=5, padx=5, sticky="nsew")
 
         self.entryField = entry.BaseEntry(parent, placeholder="Enter message.", width=80)

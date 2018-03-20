@@ -296,7 +296,6 @@ class Server:
                         print('inside2')
                         self.users_channels_map[user.username] = channelName
                         self.channels[channelName].welcome_user(user.username)
-                        self.channels[channelName].update_channels(user, self.users_channels_map2[user.username])
                 elif channelName not in self.users_channels_map2[user.username]:
                     print("not inside")
                     if not channelName in self.channels:
@@ -307,6 +306,7 @@ class Server:
                     self.channels[channelName].welcome_user(user.username)
                     self.users_channels_map[user.username] = channelName
                     self.users_channels_map2[user.username].append(channelName)
+                    self.channels[channelName].update_channels(user, self.users_channels_map2[user.username])
             except:
                 print('inside except')
                 # if the user is not in any channel, do the next
@@ -321,6 +321,7 @@ class Server:
                 self.channels[channelName].welcome_user(user.username)
                 self.users_channels_map[user.username] = channelName
                 self.users_channels_map2[user.username] = [channelName]
+                self.channels[channelName].update_channels(user, self.users_channels_map2[user.username])
 
     def away(self, user, chatMessage):
 
