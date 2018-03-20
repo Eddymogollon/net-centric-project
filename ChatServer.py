@@ -26,13 +26,14 @@ class Server:
 
     WELCOME_MESSAGE = "\n> Welcome to our chat app!!! What is your name?\n".encode('utf8')
 
-    def __init__(self, host=socket.gethostbyname('localhost'), port=50000, allowReuseAddress=True, timeout=20):
+    def __init__(self, host=socket.gethostbyname('localhost'), port=50000, allowReuseAddress=True, timeout=200):
         self.birthdate = time.strftime("%a, %d %b %Y %H:%M:%S ", time.localtime(time.time()))
         self.address = (host, port)
-        self.channels = {} # Channel Name -> Channel
-        self.users_channels_map = {} # User Name -> Channel Name
-        self.client_thread_list = [] # A list of all threads that are either running or have finished their task.
-        self.users = [] # A list of all the users who are connected to the server.
+        self.channels = {}  # Channel Name -> Channel
+        self.users_channels_map = {}  # User Name -> Channel Name
+        self.users_channels_map2 = {}  # User Name -> [Channels]
+        self.client_thread_list = []  # A list of all threads that are either running or have finished their task.
+        self.users = []  # A list of all the users who are connected to the server.
         self.exit_signal = threading.Event()
 
         try:
@@ -107,6 +108,8 @@ class Server:
                 self.help(user)
             elif '/join' in chatMessage[:5].lower():
                 self.join(user, chatMessage)
+            # elif '/join2' in chatMessage[:6].lower():
+            #     self.join2(user, chatMessage)
             elif '/list' in chatMessage[:5].lower():
                 self.list_all_channels(user)
             elif '/time' in chatMessage[:5].lower():
@@ -116,7 +119,7 @@ class Server:
             elif '/userhost' in chatMessage.lower():
                 self.userhost(user, chatMessage)
             elif '/part' in chatMessage[:5].lower():
-                self.part(user)
+                self.part(user, chatMessage)
             elif '/topic' in chatMessage[:6].lower():
                 self.topic(user, chatMessage)
             elif '/whois' in chatMessage[:6].lower():
@@ -204,6 +207,8 @@ class Server:
         print(self.channels)
         print("users_channels_map:")
         print(self.users_channels_map)
+        print("users_channels_map2:")
+        print(self.users_channels_map2)
         print("users:")
         print(self.users)
         print("client_thread_list:")
@@ -211,7 +216,8 @@ class Server:
 
         user.socket.sendall(Server.HELP_MESSAGE)
 
-    def join(self, user, chatMessage):
+    def join2(self, user, chatMessage):
+        print("Join2 executed")
         isInSameRoom = False
 
         if len(chatMessage.split()) >= 2:
@@ -236,6 +242,84 @@ class Server:
         else:
             self.help(user)
 
+    def part(self, user, chatMessage):
+        print("Part executed")
+
+        # oldChannelName = self.users_channels_map[user.username]
+        # self.channels[oldChannelName].remove_user_from_channel(user)  # remove them from the previous channel
+
+
+        if len(chatMessage.split()) >= 2:
+            channelName = chatMessage.split()[1]
+            try:
+                # detect if user is in the channel mentioned
+                if channelName in self.users_channels_map2[user.username]:
+                    print('inside')
+                    del self.users_channels_map[user.username]
+                    del self.users_channels_map2[user.username]
+                    self.channels[channelName].remove_user_from_channel(user)
+                    print(self.channels[channelName].users)
+                    user.socket.sendall("\n== You left channel {0}.".format(channelName).encode('utf8'))
+
+                elif channelName not in self.users_channels_map2[user.username]:
+                    print("not inside")
+                    if channelName in self.channels:
+                        user.socket.sendall("\n== You are not in this channel. You cannot part from it.".encode('utf8'))
+                    else:
+                        user.socket.sendall("\n== Channel does not exist. You cannot part from it.".encode('utf8'))
+            except:
+                print('inside except')
+                # if the user is not in any channel, do the next
+                # if the channel does not exist, create a new one
+                if channelName in self.channels:
+                    user.socket.sendall("\n== You are not in this channel. You cannot part from it.".encode('utf8'))
+                else:
+                    user.socket.sendall("\n== Channel does not exist. You cannot part from it.".encode('utf8'))
+
+
+
+    def join(self, user, chatMessage):
+        print("Join executed")
+        if len(chatMessage.split()) >= 2:
+            channelName = chatMessage.split()[1]
+
+
+            try:
+                # detect if user is in the channel mentioned
+                if channelName in self.users_channels_map2[user.username]:
+                    print('inside')
+                    # detect if user is currently in that channel
+                    if self.users_channels_map[user.username] == channelName:
+                        user.socket.sendall("\n> You are already in channel: {0}".format(channelName).encode('utf8'))
+                    else:  # switch to channel the user is already in
+                        # switch to channel
+                        print('inside2')
+                        self.users_channels_map[user.username] = channelName
+                        self.channels[channelName].welcome_user(user.username)
+                elif channelName not in self.users_channels_map2[user.username]:
+                    print("not inside")
+                    if not channelName in self.channels:
+                        newChannel = Channel.Channel(channelName)
+                        self.channels[channelName] = newChannel
+
+                    self.channels[channelName].users.append(user)
+                    self.channels[channelName].welcome_user(user.username)
+                    self.users_channels_map[user.username] = channelName
+                    self.users_channels_map2[user.username].append(channelName)
+            except:
+                print('inside except')
+                # if the user is not in any channel, do the next
+                # if the channel does not exist, create a new one
+                if not channelName in self.channels:
+                    newChannel = Channel.Channel(channelName)
+                    self.channels[channelName] = newChannel
+
+                # append the user object in the channel object
+                self.channels[channelName].users.append(user)
+                # change GUI ??###
+                self.channels[channelName].welcome_user(user.username)
+                self.users_channels_map[user.username] = channelName
+                self.users_channels_map2[user.username] = [channelName]
 
     def away(self, user, chatMessage):
 
@@ -455,10 +539,6 @@ Use /join [channel name] to join a channel.\n\n""".encode('utf8')
         else:
             user.socket.sendall(("\n== Invalid parameters. Try again following the pattern /nick <username>").encode('utf8'))
 
-    def part(self, user):
-
-        print("Part command is executed")
-        user.socket.sendall((user.username + " has left the channel.").encode('utf8'))
 
     def topic(self, user, chatMessage):
 
