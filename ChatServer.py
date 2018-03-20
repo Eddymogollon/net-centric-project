@@ -11,15 +11,23 @@ class Server:
 
     HELP_MESSAGE = """\n> The list of commands available are:
 
-/help                   - Show the instructions
-/join [channel_name]    - To create or switch to a channel.
-/quit                   - Exits the program.
-/list                   - Lists all available channels.
-/time                   - Returns the local time on the current server\n\n""".encode('utf8')
+/help                           - Show the instructions
+/join <channel_name>            - To create or switch to a channel.
+/quit                           - Exits the program.
+/list                           - Lists all available channels.
+/version                        - Lists current server version
+/info                           - Lists information about the server
+/rules                          - Lists the server rules
+/away [<auto_response>]         - Changes user's status to 'Away' if an 
+                                  auto response is specified otherwise, 
+                                  changes status to 'Online' 
+/prvmsg <user_name> <message>   - Sends a private message to the user specified
+/notice <user_name> <message>   - Sends a notice message to the userspecified\n\n""".encode('utf8')
 
     WELCOME_MESSAGE = "\n> Welcome to our chat app!!! What is your name?\n".encode('utf8')
 
-    def __init__(self, host=socket.gethostbyname('localhost'), port=50000, allowReuseAddress=True, timeout=1000):
+    def __init__(self, host=socket.gethostbyname('localhost'), port=50000, allowReuseAddress=True, timeout=20):
+        self.birthdate = time.strftime("%a, %d %b %Y %H:%M:%S ", time.localtime(time.time()))
         self.address = (host, port)
         self.channels = {} # Channel Name -> Channel
         self.users_channels_map = {} # User Name -> Channel Name
@@ -123,6 +131,18 @@ class Server:
                 self.invite(user, chatMessage)
             elif '/restart' in chatMessage[:8].lower():
                 self.restart()
+            elif '/version' in chatMessage:
+                self.version(user)
+            elif '/info' in chatMessage:
+                self.info(user)
+            elif '/rules' in chatMessage:
+                self.rules(user)
+            elif '/away' in chatMessage:
+                self.away(user, chatMessage)
+            elif '/prvmsg' in chatMessage:
+                self.prvmsg(user, chatMessage)
+            elif '/notice' in chatMessage:
+                self.notice(user, chatMessage)
             else:
                 self.send_message(user, chatMessage + '\n')
 
@@ -130,6 +150,39 @@ class Server:
             user.socket.sendall('/squit'.encode('utf8'))
 
         user.socket.close()
+
+
+    def version(self, user):
+        user.socket.sendall(("" + sys.version).encode('utf8'))
+
+    def rules(self, user):
+        user.socket.sendall("""\n 
+    Rules & Regulations:
+    ====================
+    Rule 1: No spamming
+    Rule 2: No personal attacks or harassment
+    Rule 3: Type in normal English
+    Rule 4: Don't monopolize the conversation
+    Rule 5: No solicitation\n\n""".encode('utf8'))
+
+    def info(self, user):
+        info_str = """\n 
+    /INFO
+
+    PROGRAMMER:  Ian F. Cuvalay  591-7808
+
+    CLASS:       CNT 4713 
+
+    INSTRUCTOR:  Dr.Francisco Ortega
+
+    ASSIGNMENT:  Lab #3
+
+    CERTIFICATION: Based on the orginal code provided by the Prof.Ortega...
+                   I certify that this work is my own and that
+                   none of it is the work of any other person.
+
+    Server Birthdate: """ + self.birthdate + """ \nEnd of /INFO list.\n\n"""
+        user.socket.sendall(info_str.encode('utf8'))
 
     def quit(self, user):
         user.socket.sendall('/quit'.encode('utf8'))
@@ -182,6 +235,59 @@ class Server:
                 self.users_channels_map[user.username] = channelName
         else:
             self.help(user)
+
+
+    def away(self, user, chatMessage):
+
+        splitMessage = chatMessage.split()
+
+        if len(splitMessage) > 1:
+            auto_response = " ".join(splitMessage[1:])
+            user.status = "Away"
+            user.PRVMSG = auto_response
+            user.socket.sendall(("\n" + user.username + " is now away\n").encode('utf8'))
+        elif len(splitMessage) == 1:
+            user.status = "Online"
+            user.socket.sendall(("\n" + user.username + " is no longer away\n").encode('utf8'))
+        else:
+            self.help(user)
+
+    def prvmsg(self, user, chatMessage):
+
+        splitMessage = chatMessage.split()
+
+        if len(splitMessage) > 2:
+            target = splitMessage[1]
+            message = " ".join(splitMessage[2:])
+
+            for auser in self.users:
+
+                if auser.username == target:
+                    user.socket.sendall("\n[private_message][To: {0}]: {1}".format(auser.username, message + "\n").encode('utf8'))
+                    auser.socket.sendall("\n[private_message]{0}: {1}".format(user.username, message + "\n").encode('utf8'))
+                if(auser.status == "Away"):
+                    user.socket.sendall((auser.PRVMSG + "\n").encode('utf8'))
+        else:
+            self.help(user)
+
+
+    def notice(self, user, chatMessage):
+
+        splitMessage = chatMessage.split()
+
+        if len(splitMessage) > 2:
+
+            target = splitMessage[1]
+            message = " ".join(splitMessage[2:])
+
+            for auser in self.users:
+
+                if auser.username == target:
+                    user.socket.sendall("\n[notice][To: {0}]: {1}".format(auser.username, message + "\n").encode('utf8'))
+                    auser.socket.sendall("\n[notice]{0}: {1}".format(user.username, message + "\n").encode('utf8'))
+        else:
+            self.help(user)
+
 
     def send_message(self, user, chatMessage):
         if user.username in self.users_channels_map:

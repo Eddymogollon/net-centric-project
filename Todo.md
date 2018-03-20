@@ -1,3 +1,11 @@
+# change user_channels_map AND
+# fix join method, you join a channel without leaving
+
+# create part method
+
+
+
+
 # Add instructions
 # add topic with tkinter
 # what is @?
@@ -5,6 +13,5 @@
 # user needs to have OPER status
 # set user pass config
 # authenticate users
-# Create a tkinter part for tabs
 # Indicate server operator, channel operator, IRC operator
 # validate

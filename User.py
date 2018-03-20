@@ -8,7 +8,8 @@ class User:
         self._password = password
         self._usertype = usertype
         self._status = "Online"
-        # add time connected
+        self._PRVMSG = "This user is currently away"
+        ### add time connected
 
     @property
     def socket(self):
@@ -34,6 +35,11 @@ class User:
     def status(self):
         return self._status
 
+    @property
+    def PRVMSG(self):
+        return self._PRVMSG
+
+
     @username.setter
     def username(self, new_username):
         self._username = new_username
@@ -53,3 +59,8 @@ class User:
     @status.setter
     def status(self, new_status):
         self._status = new_status
+
+    @PRVMSG.setter
+    def PRVMSG(self, new_PRVMSG):
+        self._PRVMSG = new_PRVMSG
+

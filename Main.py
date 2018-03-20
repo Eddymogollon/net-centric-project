@@ -85,22 +85,37 @@ class ChatWindow(tk.Frame):
         self.backgroundListColor = '#2f3136'
         self.textColor = '#b9c1b6'
 
-        self.messageTextArea = tk.Text(parent, bg=self.backgroundColor, fg=self.textColor, state=tk.DISABLED, wrap=tk.WORD)
-        self.messageTextArea.grid(row=0, column=0, columnspan=2, sticky="nsew")
+
+        self.messageLabel = tk.Label(parent, text="", height='0', justify='left')
+        self.messageLabel.grid(row=0, column=0, columnspan=2, sticky="nsew")
+
+        self.channelLabel = tk.Label(parent, text="Channels:", height='0', justify='left')
+        self.channelLabel.grid(row=0, column=4, sticky="nsew")
+
+        self.usersLabel = tk.Label(parent, text="Users:", height='0', justify='left')
+        self.usersLabel.grid(row=0, column=5, sticky="nsew")
+
+        self.messageTextArea = tk.Text(parent, height=34, bg=self.backgroundColor, fg=self.textColor, state=tk.DISABLED, wrap=tk.WORD)
+        self.messageTextArea.grid(row=1, column=0, columnspan=2, sticky="nsew")
 
         self.messageScrollbar = tk.Scrollbar(parent, troughcolor="red", orient=tk.VERTICAL, command=self.messageTextArea.yview)
-        self.messageScrollbar.grid(row=0, column=3, sticky="ns")
+        self.messageScrollbar.grid(row=1, column=3, sticky="ns")
 
         self.messageTextArea['yscrollcommand'] = self.messageScrollbar.set
 
+        self.channelsListBox = tk.Listbox(parent, bg=self.backgroundListColor)
+        self.channelsListBox.grid(row=1, column=4, padx=5, sticky="nsew")
+
+        # self.channelsListBox.insert(1, "Status")
+
         self.usersListBox = tk.Listbox(parent, bg=self.backgroundListColor)
-        self.usersListBox.grid(row=0, column=4, padx=5, sticky="nsew")
+        self.usersListBox.grid(row=1, column=5, padx=5, sticky="nsew")
 
         self.entryField = entry.BaseEntry(parent, placeholder="Enter message.", width=80)
-        self.entryField.grid(row=1, column=0, padx=5, pady=10, sticky="we")
+        self.entryField.grid(row=2, column=0, padx=5, pady=10, sticky="we")
 
         self.send_message_button = tk.Button(parent, text="Send", width=10, bg="#CACACA", activebackground="#CACACA")
-        self.send_message_button.grid(row=1, column=1, padx=5, sticky="we")
+        self.send_message_button.grid(row=2, column=1, padx=5, sticky="we")
 
     #  Insert a message to the chat
     def update_chat_window(self, message):
@@ -172,7 +187,7 @@ class ChatGUI(tk.Frame):
         screenSizeX = self.parent.winfo_screenwidth()
         screenSizeY = self.parent.winfo_screenheight()
 
-        frameSizeX = 800
+        frameSizeX = 900
         frameSizeY = 600
 
         framePosX = (screenSizeX - frameSizeX) / 2
