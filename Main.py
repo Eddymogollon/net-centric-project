@@ -28,13 +28,13 @@ class SocketThreadedTask(threading.Thread):
                     self.callbacks['update_chat_window']('\n> The server was forcibly shutdown. No further messages are able to be sent\n')
                     self.socket.disconnect()
                     break
-                elif 'joined' in message:
+                elif 'joined the channel' in message:
                     split_message = message.split('|')
                     self.callbacks['clear_chat_window']()
                     self.callbacks['update_chat_window'](split_message[0])
                     self.callbacks['update_user_list'](split_message[1])
 
-                elif 'left' in message:
+                elif 'left channel' in message:
                     split_message = message.split('|')
                     self.callbacks['clear_chat_window']()
                     self.callbacks['update_chat_window'](split_message[0])

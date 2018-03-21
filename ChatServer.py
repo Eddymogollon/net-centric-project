@@ -565,9 +565,21 @@ Use /join [channel name] to join a channel.\n\n""".encode('utf8')
         splitMessage = chatMessage.split()
         if len(splitMessage) == 2:
         ### update current box
-            print(user.username)
+
+            previousName = user.username
+
             user.username = chatMessage.split()[1]
             print(user.username)
+
+            self.users_channels_map[user.username] = self.users_channels_map[previousName]
+            self.users_channels_map2[user.username] = self.users_channels_map[previousName]
+            del self.users_channels_map[previousName]
+            del self.users_channels_map2[previousName]
+
+            print(self.channels[self.users_channels_map[user.username]].get_all_users_in_channel())
+
+            ### create a for loop to go through each channel and change all instances of the previous name to the new name
+
             user.socket.sendall(("\n== You changed your name to {0}".format(user.username)).encode('utf8'))
         else:
             user.socket.sendall(("\n== Invalid parameters. Try again following the pattern /nick <username>").encode('utf8'))
