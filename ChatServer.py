@@ -266,7 +266,7 @@ class Server:
                         print("Is this working?")
 
                         self.channels[channelName].remove_user_from_channel(user)
-                        user.socket.sendall("\n== You left channel {0}.".format(channelName).encode('utf8'))
+                        user.socket.sendall("\n== You left channel {0}.|".format(channelName).encode('utf8'))
                         self.channels[channelName].update_channels(user, self.users_channels_map2.get(user.username) or [])
                     elif len(self.users_channels_map2[user.username]) > 1 and self.users_channels_map[user.username] == channelName:
                         print("Is this working2?")
@@ -276,7 +276,7 @@ class Server:
                         self.users_channels_map[user.username] = self.users_channels_map2[user.username][0]## index1
                         # self.channels[self.users_channels_map[user.username]].welcome_user(user.username)
                         self.channels[channelName].remove_user_from_channel(user)
-                        user.socket.sendall("\n== You left channel {0}.".format(channelName).encode('utf8'))
+                        user.socket.sendall("\n== You left channel {0}.|".format(channelName).encode('utf8'))
                     elif len(self.users_channels_map2[user.username]) > 1:
                         print('Is this workign3?')
                         # if user has two channels and one is removed that is not current
@@ -284,8 +284,10 @@ class Server:
                         self.channels[channelName].remove_channels(user, channelName)
 
                         self.channels[channelName].remove_user_from_channel(user)
-                        user.socket.sendall("\n== You left channel {0}.".format(channelName).encode('utf8'))
+                        user.socket.sendall("\n== You left channel {0}.|".format(channelName).encode('utf8'))
                         self.channels[channelName].update_channels(user, self.users_channels_map2.get(user.username) or [])
+
+                    self.channels[self.users_channels_map[user.username]].update_users(user)
 
                 elif channelName not in self.users_channels_map2[user.username]:
                     print("not inside")

@@ -9,6 +9,7 @@ class User:
         self._usertype = usertype
         self._status = "Online"
         self._PRVMSG = "This user is currently away"
+        self._chat_messages_in_channel = {}
         ### add time connected
 
     @property
@@ -39,6 +40,9 @@ class User:
     def PRVMSG(self):
         return self._PRVMSG
 
+    @property
+    def chat_messages_in_channels(self):
+        return self._chat_messages_in_channel
 
     @username.setter
     def username(self, new_username):
@@ -64,3 +68,6 @@ class User:
     def PRVMSG(self, new_PRVMSG):
         self._PRVMSG = new_PRVMSG
 
+    @chat_messages_in_channels.setter
+    def chat_messages_in_channels(self, chat_messsages):
+        self._chat_messages_in_channel = chat_messsages

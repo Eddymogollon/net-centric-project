@@ -16,7 +16,7 @@ class SocketThreadedTask(threading.Thread):
             try:
                 message = self.socket.receive()
 
-                print(message)
+                print("The whole message is:" + message)
 
                 if message == '/quit':
                     self.callbacks['clear_chat_window']()
@@ -35,11 +35,20 @@ class SocketThreadedTask(threading.Thread):
                     self.callbacks['update_user_list'](split_message[1])
 
                 elif 'left' in message:
+                    split_message = message.split('|')
                     self.callbacks['clear_chat_window']()
-                    self.callbacks['update_chat_window'](message)
-                    # self.callbacks['remove_user_from_list'](message.split(' ')[2])
+                    self.callbacks['update_chat_window'](split_message[0])
+                    print("AAAAAAAAAAAAAAAAAAAAAAAA" + message)
 
+                    if '[update channel]' in message:
+                        self.callbacks['update_channel_list'](split_message[2])
+                        print('inside update channel')
+                    if '[update users]' in message:
 
+                        if (len(split_message)) == 3:
+                            self.callbacks['update_user_list'](split_message[2])
+                        else:
+                            self.callbacks['update_user_list'](split_message[4])
                 elif 'change your name' in message:
                     self.callbacks['update_chat_window'](split_message[0])
                     self.callbacks['update_user_list'](split_message[1])
@@ -51,6 +60,10 @@ class SocketThreadedTask(threading.Thread):
                     print('GUI received remove channel')
                     split_message = message.split('|')
                     self.callbacks['remove_channel_list'](split_message[1])
+                elif '[update users]' in message:
+                    print('GUI received update users')
+                    split_message = message.split('|')
+                    self.callbacks['update_user_list'](split_message[1])
                 else:
                     self.callbacks['update_chat_window'](message)
             except OSError:
@@ -135,7 +148,6 @@ class ChatWindow(tk.Frame):
         self.messageTextArea.insert(tk.END, message)
         self.messageTextArea.configure(state='disabled')
         self.messageTextArea.yview_pickplace("end")  # Sends textarea to bottom
-
 
     def update_user_list(self, user_message):
         users = user_message.split(' ')

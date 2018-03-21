@@ -7,13 +7,19 @@ class Channel:
     def update_channels(self, user, all_channels):
         print('update_channels')
         print(' '.join(all_channels))
-        user.socket.sendall('[update channel]|{0}'.format(' '.join(all_channels)).encode('utf8'))
+        user.socket.sendall('[update channel]|{0}|'.format(' '.join(all_channels)).encode('utf8'))
 
     def remove_channels(self, user, channel):
         print('remove_channel')
 
         user.socket.sendall('[remove channel]|{0}'.format(channel).encode('utf8'))
 
+
+    def update_users(self, user):
+        print("UPDATE USERS")
+
+        all_users = self.get_all_users_in_channel()
+        user.socket.sendall('[update users]|{0}'.format(all_users).encode('utf8'))
 
     def welcome_user(self, username):
         all_users = self.get_all_users_in_channel()
