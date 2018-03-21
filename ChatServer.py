@@ -572,7 +572,7 @@ Use /join [channel name] to join a channel.\n\n""".encode('utf8')
             print(user.username)
 
             self.users_channels_map[user.username] = self.users_channels_map[previousName]
-            self.users_channels_map2[user.username] = self.users_channels_map[previousName]
+            self.users_channels_map2[user.username] = self.users_channels_map2[previousName]
             del self.users_channels_map[previousName]
             del self.users_channels_map2[previousName]
 
