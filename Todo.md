@@ -1,31 +1,4 @@
-# change user_channels_map AND
-# fix join method, you join a channel without leaving
-
-# create part method
-
-# modify methods: send_message
-
-
-# Choice: create a status channel or 
-# send message send a message where the user is looking
-
-
-
-# when user is not in a channel, create a new channel
-
-
-user_channels_map2 = {
-  'emogo001': ['hello1', 'hello2']
-}
-
-channelName = 'hello1'
-username = 'emogo001'
-
-# detect if user is in the channel mentioned
-if channelName in user_channels_map2[username]:
-  print('do something')
-else:
-  print('do something else')
+# bug: when using part, users are erased.
 
 
 

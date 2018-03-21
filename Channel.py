@@ -9,6 +9,12 @@ class Channel:
         print(' '.join(all_channels))
         user.socket.sendall('[update channel]|{0}'.format(' '.join(all_channels)).encode('utf8'))
 
+    def remove_channels(self, user, channel):
+        print('remove_channel')
+
+        user.socket.sendall('[remove channel]|{0}'.format(channel).encode('utf8'))
+
+
     def welcome_user(self, username):
         all_users = self.get_all_users_in_channel()
 
@@ -31,6 +37,7 @@ class Channel:
         return ' '.join([user.username for user in self.users])
 
     def remove_user_from_channel(self, user):
+        print(user)
         self.users.remove(user)
         leave_message = "\n> {0} has left the channel {1}\n".format(user.username, self.channel_name)
         self.broadcast_message(leave_message)

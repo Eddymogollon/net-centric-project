@@ -248,18 +248,44 @@ class Server:
         # oldChannelName = self.users_channels_map[user.username]
         # self.channels[oldChannelName].remove_user_from_channel(user)  # remove them from the previous channel
 
-
         if len(chatMessage.split()) >= 2:
             channelName = chatMessage.split()[1]
             try:
                 # detect if user is in the channel mentioned
                 if channelName in self.users_channels_map2[user.username]:
                     print('inside')
-                    del self.users_channels_map[user.username]
-                    del self.users_channels_map2[user.username]
-                    self.channels[channelName].remove_user_from_channel(user)
-                    print(self.channels[channelName].users)
-                    user.socket.sendall("\n== You left channel {0}.".format(channelName).encode('utf8'))
+
+
+
+                    # three actions:
+                    # if user has only one channel and is removed.
+                    if len(self.users_channels_map2[user.username]) == 1:
+                        del self.users_channels_map[user.username]
+                        del self.users_channels_map2[user.username]
+
+                        print("Is this working?")
+
+                        self.channels[channelName].remove_user_from_channel(user)
+                        user.socket.sendall("\n== You left channel {0}.".format(channelName).encode('utf8'))
+                        self.channels[channelName].update_channels(user, self.users_channels_map2.get(user.username) or [])
+                    elif len(self.users_channels_map2[user.username]) > 1 and self.users_channels_map[user.username] == channelName:
+                        print("Is this working2?")
+                        # if user has two channels and the current one is removed, the user passes to another channel
+                        self.users_channels_map2[user.username].remove(channelName)
+                        self.channels[channelName].remove_channels(user, channelName)
+                        self.users_channels_map[user.username] = self.users_channels_map2[user.username][0]## index1
+                        # self.channels[self.users_channels_map[user.username]].welcome_user(user.username)
+                        self.channels[channelName].remove_user_from_channel(user)
+                        user.socket.sendall("\n== You left channel {0}.".format(channelName).encode('utf8'))
+                    elif len(self.users_channels_map2[user.username]) > 1:
+                        print('Is this workign3?')
+                        # if user has two channels and one is removed that is not current
+                        self.users_channels_map2[user.username].remove(channelName)
+                        self.channels[channelName].remove_channels(user, channelName)
+
+                        self.channels[channelName].remove_user_from_channel(user)
+                        user.socket.sendall("\n== You left channel {0}.".format(channelName).encode('utf8'))
+                        self.channels[channelName].update_channels(user, self.users_channels_map2.get(user.username) or [])
 
                 elif channelName not in self.users_channels_map2[user.username]:
                     print("not inside")
@@ -268,7 +294,10 @@ class Server:
                     else:
                         user.socket.sendall("\n== Channel does not exist. You cannot part from it.".encode('utf8'))
             except:
+
                 print('inside except')
+                print("Unexpected error:", sys.exc_info()[0])
+                # raise
                 # if the user is not in any channel, do the next
                 # if the channel does not exist, create a new one
                 if channelName in self.channels:

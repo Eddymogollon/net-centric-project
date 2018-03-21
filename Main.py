@@ -35,8 +35,11 @@ class SocketThreadedTask(threading.Thread):
                     self.callbacks['update_user_list'](split_message[1])
 
                 elif 'left' in message:
+                    self.callbacks['clear_chat_window']()
                     self.callbacks['update_chat_window'](message)
-                    self.callbacks['remove_user_from_list'](message.split(' ')[2])
+                    # self.callbacks['remove_user_from_list'](message.split(' ')[2])
+
+
                 elif 'change your name' in message:
                     self.callbacks['update_chat_window'](split_message[0])
                     self.callbacks['update_user_list'](split_message[1])
@@ -44,6 +47,10 @@ class SocketThreadedTask(threading.Thread):
                     print('GUI received update channel')
                     split_message = message.split('|')
                     self.callbacks['update_channel_list'](split_message[1])
+                elif '[remove channel]' in message:
+                    print('GUI received remove channel')
+                    split_message = message.split('|')
+                    self.callbacks['remove_channel_list'](split_message[1])
                 else:
                     self.callbacks['update_chat_window'](message)
             except OSError:
@@ -138,11 +145,27 @@ class ChatWindow(tk.Frame):
                 self.usersListBox.insert(tk.END, user)
 
     def update_channel_list(self, channel_message):
+
+        print('in update channel list')
         channels = channel_message.split(' ')
         print(channels)
-        for channel in channels:
-            if channel not in self.channelsListBox.get(0, tk.END):
-                self.channelsListBox.insert(tk.END, channel)
+
+        if channels[0] != '':
+            for channel in channels:
+
+                if channel not in self.channelsListBox.get(0, tk.END):
+                    self.channelsListBox.insert(tk.END, channel)
+
+        else:
+            self.channelsListBox.delete(0)
+
+    def remove_channel_list(self, channel):
+        print('in remove channel list')
+        index = self.channelsListBox.get(0, tk.END).index(channel)
+        print('Index is:', index)
+        self.channelsListBox.delete(index)
+
+
 
     def remove_user_from_list(self, user):
         print(user)
@@ -238,7 +261,8 @@ class ChatGUI(tk.Frame):
                                                       update_user_list=self.ChatWindow.update_user_list,
                                                       update_channel_list=self.ChatWindow.update_channel_list,
                                                       clear_chat_window=self.ChatWindow.clear_chat_window,
-                                                      remove_user_from_list=self.ChatWindow.remove_user_from_list,).start()
+                                                      remove_user_from_list=self.ChatWindow.remove_user_from_list,
+                                                      remove_channel_list=self.ChatWindow.remove_channel_list,).start()
             else:
                 tk.messagebox.showwarning("Error", "Unable to connect to the server.")
 
